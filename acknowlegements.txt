@@ -1,0 +1,81 @@
+I used ChatGPT throughout this project to help explain course concepts and example code, relate the Week 1 material to the project requirements, assist with code development and troubleshooting, and verify my understanding of the results. I reviewed and ran the code myself and did not use any additional libraries beyond those introduced in the course material. Below are two representative examples of the prompts I used.
+
+Example of the prompts that I used:
+
+tickers = ["AAPL", "AMZN", "COIN", "GOOG", "IBM", "META", "MSFT", "NVDA", "SPY", "TSLA"]
+
+historical_prices = None
+
+for t in tickers:
+    ticker = yf.Ticker(t)
+    history =  ticker.history(period="2y")
+
+    monthly_prices = history['Close'].resample('ME').last()
+
+    if historical_prices is None:
+        historical_prices = monthly_prices
+    else:
+        historical_prices = pd.concat([historical_prices, monthly_prices], axis=1)
+
+historical_prices.columns = tickers
+historical_prices.index = pd.to_datetime(historical_prices.index).strftime("%Y-%m")
+
+historical_prices
+
+Can you walk me through this Week 1 code line by line? I understand that we’re using yfinance to get stock data, but I want to understand how the loop builds historical_prices, what resample('ME').last() is doing, and why we’re collecting monthly closing prices
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+n = len(estimated_returns)
+
+x_minimum_risk = cp.Variable(n)
+
+objective_minimum_risk = cp.Minimize(
+    x_minimum_risk.T
+    @ estimated_covariance.to_numpy()
+    @ x_minimum_risk
+)
+
+prob_minimum_risk = cp.Problem(
+    objective_minimum_risk,
+    [
+        0 <= x_minimum_risk,
+        cp.sum(x_minimum_risk) == 1
+    ]
+)
+
+covariance_minimum_risk = prob_minimum_risk.solve()
+
+estimated_return_minimum_risk = (
+    x_minimum_risk.value.T @ estimated_returns
+)
+
+ef_variances = []
+ef_returns = []
+ef_portfolios = []
+
+for r in np.linspace(
+    estimated_return_minimum_risk,
+    estimated_return_maximum_return,
+    1001
+):
+    x_r = cp.Variable(n)
+
+    prob_r = cp.Problem(
+        cp.Minimize(
+            x_r.T
+            @ estimated_covariance.to_numpy()
+            @ x_r
+        ),
+        [
+            0 <= x_r,
+            cp.sum(x_r) == 1,
+            x_r.T @ estimated_returns == r
+        ]
+    )
+
+    ef_variances.append(prob_r.solve())
+    ef_returns.append(r)
+    ef_portfolios.append(x_r.value)
+
+I understand that the first piece of code is finding the portfolio with the lowest possible variance while the second builds on that idea by finding the lowest-variance portfolio at different levels of expected return. Can you walk me through how the CVXPY code accomplishes this? In particular I want to understand what x.T @ estimated_covariance @ x represents, what each constraint is doing, and why repeatedly solving the optimization for different target returns produces the efficient frontier
